@@ -25,12 +25,15 @@ app.get("/urls", (req, res) => {
   res.render("urls_index", templateVars);
 });
 
-app.get("/urls:id", (req, res) => {
-  const id = req.params.id;
-  const longUrl = urlDatabase[id];
-  const templateVars = {id: longUrl}
+app.get("/urls/:id", (req, res) => {
+  const templateVars = { id: req.params.id, longURL: urlDatabase[req.params.id]/* What goes here? */ };
   res.render("urls_show", templateVars);
 });
+
+// app.get("/urls:id", (req, res) => {
+//   const templateVars = {id: req.params.id, longUrl: urlDatabase[req.params.id]}
+//   res.render("urls_index", templateVars);
+// });
 
 app.listen(PORT, () => {
   console.log(`Example app listening on port ${PORT}!`);
