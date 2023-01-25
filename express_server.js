@@ -49,10 +49,16 @@ app.get("/urls/:id", (req, res) => {
   res.render("urls_show", templateVars);
 });
 
-// app.get("/urls:id", (req, res) => {
-//   const templateVars = {id: req.params.id, longUrl: urlDatabase[req.params.id]}
-//   res.render("urls_index", templateVars);
-// });
+app.get("/u/:id", (req, res) => {
+  const longURL = urlDatabase[req.params.id];
+  if(!longURL){
+    res.render("urls_error");
+  }
+  else{
+    res.redirect(longURL);
+  }
+});
+
 
 app.listen(PORT, () => {
   console.log(`Example app listening on port ${PORT}!`);
