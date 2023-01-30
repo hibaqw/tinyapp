@@ -101,36 +101,73 @@ app.get("/urls", (req, res) => {
 // display new short url on /urls/new page"
 app.get("/urls/new", (req, res) => {
   // const templateVars = { username: req.cookies["username"]}
-  const user = users[req.cookies.user_id]
-  const templateVars = {user: user};
-  res.render("urls_new", templateVars);
+  if (!req.cookies.user_id){
+    res.redirect('/login');
+  }
+  else {
+    const user = users[req.cookies.user_id]
+    const templateVars = {user: user};
+    res.render("urls_new", templateVars);
+  }
 });
 //display new long and short url on urls page
 app.post("/urls", (req, res) => {
-  let id = generateRandomString();
-  urlDatabase[id]= req.body.longURL;
-  res.redirect(`/urls/${id}`);
+  if(!req.cookies.user_id){
+    res.send("Login or Sign Up to Create New URL Link");
+    return;
+  }
+  else {
+    let id = generateRandomString();
+    urlDatabase[id]= req.body.longURL;
+    res.redirect(`/urls/${id}`);
+  }
+  return;
+
 });
 
 //delete specfic url and redirect back to /urls page
 app.post("/urls/:id/delete", (req, res) => {
+  if(!req.cookies.user_id){
+    res.send("Login or Sign Up to Delete URL Link");
+    return;
+  }
   delete urlDatabase[req.params.id];
   res.redirect('/urls');
 });
 //display clickable short url on /urls/id page
 app.get("/urls/:id", (req, res) => {
+  if (!urlDatabase[req.params.id]){
+    res.send('Short URL Entered Does Not Exist.')
+    return;
+  }
   const user = users[req.cookies.user_id];
-  const templateVars = { id: req.params.id, longURL: urlDatabase[req.params.id], user: user};
+  const templateVars = { id: req.params.id, longURL: urlDatabase[req.params.id], urls: urlDatabase ,user: user};
   res.render("urls_show", templateVars);
 });
+
+//post request to edit existing longURL
 app.post("/urls/:id", (req, res) => {
+
+  if(!req.cookies.user_id){
+    res.send("Login to Update Existing Url.");
+    return;
+  }
+
   urlDatabase[req.params.id]= req.body.longURL;
   res.redirect('/urls');
 });
 
 // redirect from /u/id to long url by clicking clickable short link
 app.get("/u/:id", (req, res) => {
+
   const longURL = urlDatabase[req.params.id];
+  // is this a good way for checking if id exists in database
+  // what about the message sent?
+  /*if (!urlDatabase[req.params.id]){
+    res.send('Short URL Entered Does Not Exist.')
+    return;
+  }*/
+
 //if longURL doesn't exist
 //send status 404 response
   if(!longURL){
@@ -143,13 +180,19 @@ app.get("/u/:id", (req, res) => {
 });
 // get login info and render login page
 app.get("/login", (req,res) => {
-  const templateVars = { id: req.params.id, longURL: urlDatabase[req.params.id], user: undefined};
-  res.render('urls_login',templateVars);
+  if(!req.cookies.user_id){
+    const templateVars = { id: req.params.id, longURL: urlDatabase[req.params.id], user: undefined};
+    res.render('urls_login',templateVars);
+  }
+  else{
+    res.redirect('/urls');
+  }
 
 });
 // handle login response
 app.post("/login", (req,res) => {
   if(!getUserEmail(req.body.email)){
+    // console.log("error:messg");
     res.sendStatus(403);
   }
   else if (!verifyPassword(req.body.email, req.body.password)){
@@ -171,9 +214,15 @@ app.post("/logout", (req,res) => {
 // render login page
 app.get("/register", (req,res) =>{
   //const user = users["userRandomID"];
-  const templateVars = { id: req.params.id, longURL: urlDatabase[req.params.id], user: undefined};
-  res.render("urls_register", templateVars);
-})
+  if (!req.cookies.user_id) {
+    const templateVars = { id: req.params.id, longURL: urlDatabase[req.params.id], user: undefined};
+    res.render("urls_register", templateVars);
+  }
+  else {
+    res.redirect('/urls');
+  }
+
+});
 // handle login response
 app.post("/register", (req,res) =>{
   // const user_email = req.body.email;
@@ -190,7 +239,7 @@ app.post("/register", (req,res) =>{
     console.log(users);
     res.redirect('/login');
   }
-})
+});
 
 app.listen(PORT, () => {
   console.log(`Example app listening on port ${PORT}!`);
