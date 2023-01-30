@@ -17,32 +17,14 @@
         <a class="nav-item nav-link" href="/urls">My URLs</a>
         <a class="nav-item nav-link" href="/urls/new">Create New URL</a>
       </div>
-    </div>
-    <div id="form-div">
-    <%if( user === undefined){ %> 
-      <form class="form-inline" action="/login" method="POST" style="flex-direction: row;">
-        <div class="form-groupmb-2">
-          <!-- <label for="username">Username</label> -->
-          <input
-            class="form-control"
-            type="text"
-            name="email"
-            placeholder="example@gmail.com"
-            style="width: 300px; margin: 1em"
-          />
-          <button type="submit" class="btn btn-outline-dark">Login</button>
-        </div>
-      </form>
-    <%} else { %>
-    <form class="form-inline" action="/logout" method="POST" style="justify-content: center;">
-      <div class="form-groupmb-2">
-        <!-- <label for="username">Username</label> -->
-        <div style= "float:left; margin-right: 70px; padding-top: 10px;"><h6 > Logged in as:<%= user["email"]%></h6></div>
-        <div style="float: left"><button type="submit" class="btn btn-outline-dark">Logout</button></div>
+      <%if(!user){ %> 
+      <div style="justify-content:flex-end">
+        <a class = "login-link" href = "/login" style="margin-left: 800px;">Login</a>
+        <a class = "registration-link" href = "/register" style="margin-left:10px">Register</a>
       </div>
-    </form>
-  <%}%>
-  <h4><user></user></h4>
-  </div>
+      <% } else { %>
+        <div style= "float:left; margin-right: 70px; padding-top: 10px;"><h6 >Logged in as: <%= user["email"] %></h6></div>
+        <form action="/logout" method="post"><div style="float: left"><button type="submit" class="btn btn-outline-dark">Logout</button></div></form>
+      <%}%>
   </nav>
 </header>
