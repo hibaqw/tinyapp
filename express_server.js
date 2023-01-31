@@ -2,6 +2,7 @@ const express = require("express");
 const cookieParser = require('cookie-parser');
 const { renderFile } = require("ejs");
 const e = require("express");
+const bcrypt = require("bcryptjs");
 const app = express();
 const PORT = 8080; // default port 8080
 
@@ -68,10 +69,9 @@ function getUserEmail(email){
 
 }
 function verifyPassword(email, password){
-
   for (const key in users){
     if (users[key]["email"] === email) {
-        if (users[key]["password"] === password){
+        if (bcrypt.compareSync(password, users[key]["password"])){
           return true;
         }
     }
@@ -270,16 +270,16 @@ app.get("/login", (req,res) => {
 // handle login response
 app.post("/login", (req,res) => {
   if(!getUserEmail(req.body.email)){
-    // console.log("error:messg");
     res.sendStatus(403);
+    return;
   }
-  else if (!verifyPassword(req.body.email, req.body.password)){
+  if (!verifyPassword(req.body.email, req.body.password)){
     res.sendStatus(403);
+    return;
   }
   else{
     const user_id = getUserId(req.body.email);
     res.cookie("user_id", user_id);
-    console.log(req.cookies.user_id);
     res.redirect('/urls');
   }
 
@@ -311,7 +311,10 @@ app.post("/register", (req,res) =>{
   }
   else{
     const user_id  = generateRandomString();
-    users[user_id] = {id : user_id, email: req.body.email, password: req.body.password};
+    const email = req.body.email;
+    const password = req.body.password;
+    const hashedPassword = bcrypt.hashSync(password, 10);
+    users[user_id] = { user_id, email, password: hashedPassword};
     console.log("USER_ID",users[user_id]);
     res.cookie("user_id", user_id);
     console.log(users);
