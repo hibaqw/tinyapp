@@ -230,7 +230,7 @@ app.post("/login", (req,res) => {
   }
   // if user entered invalid password send error message
   if (!verifyPassword(req.body.email, req.body.password, users)){
-    res.send(`${users["userRandomID"].password}`);
+    res.send('Wrong Password.')
     return;
   }
   else{
