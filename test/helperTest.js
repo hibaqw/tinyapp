@@ -1,4 +1,6 @@
 const { assert } = require('chai');
+const bcrypt = require('bcryptjs');
+
 
 const { getUserByEmail, getUserEmail, urlsForUser, verifyPassword, generateRandomString } = require('../helpers.js');
 
@@ -6,12 +8,12 @@ const testUsers = {
   "userRandomID": {
     id: "userRandomID", 
     email: "user@example.com", 
-    password: "purple-monkey-dinosaur"
+    password: bcrypt.hashSync("purple-monkey-dinosaur", 10)
   },
   "user2RandomID": {
     id: "user2RandomID", 
     email: "user2@example.com", 
-    password: "dishwasher-funk"
+    password: bcrypt.hashSync("dishwasher-funk",10)
   }
 };
 
@@ -53,6 +55,9 @@ describe('getUserByEmail', function() {
     // Write your assert statement here
     assert.isUndefined(user);
   });
+});
+
+describe('getUserEmail', function() {
 
   it('should return the same email when given an valid email i.e email exists in user database', function() {
     const user = getUserEmail("user@example.com", testUsers);
@@ -70,16 +75,41 @@ describe('getUserByEmail', function() {
     assert.isUndefined(user);
   });
 
-  it('should return an objected populated with ', function() {
-    const user = getUserEmail(" ", testUsers);
-    assert.isUndefined(user);
+
+});
+
+describe('urlsForUsers', function() {
+  it('should return an object populated with all urls belonging to specfic user', function() {
+    const userURLs = urlsForUser("userRandomID", testUrls);
+    const expectedURLs = {"i3BoGr" : "https://www.google.ca", "g4bTXn" : "https://www.reddit.com"};
+    assert.deepEqual(userURLs,expectedURLs);
   });
 
-  
+  it('should return an empty object when passed a user id with no associated urls', function() {
+    const userURLs = urlsForUser("user2RandomID", testUrls);
+    // const expectedURLs = {"i3BoGr" : "https://www.google.ca", "g4bTXn" : "https://www.reddit.com"};
+    assert.deepEqual(userURLs,{});
+  });
 
+});
 
+describe('verifyPassword', function() {
+  it('should return true when given a valid password that belongs to user', function() {
+    assert.isTrue(verifyPassword("user2@example.com", "dishwasher-funk", testUsers));
+  });
 
+  it('should return false when passed a valid password that doesn\'t belong with email', function() {
+   assert.isFalse(verifyPassword("user2@example.com", "purple-monkey-dinosaur",testUsers));
+  });
 
+  it('should return false when passed a invalid password that doesn\'t belong with email', function() {
+    assert.isFalse(verifyPassword("user2@example.com", "mickey-mouse",testUsers));
+   });
 
+});
 
+describe('generatePassword', function() {
+  it('should return an alphanumeric string of exactly 6 characters and numbers' , function () {
+  assert.equal(generateRandomString().length, 6); 
+});
 });

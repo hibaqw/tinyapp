@@ -1,6 +1,6 @@
 const express = require("express");
 const {getUserEmail, getUserByEmail, urlsForUser, verifyPassword, generateRandomString} = require('./helpers');
-const cookieSession = require('cookie-session')
+const cookieSession = require('cookie-session');
 const { renderFile } = require("ejs");
 const e = require("express");
 const bcrypt = require("bcryptjs");
@@ -12,7 +12,7 @@ const users = {
   userRandomID: {
     id: "userRandomID",
     email: "user@example.com",
-    password: "purple-monkey-dinosaur",
+    password: "purple-monkey-dinosaur"
   },
   user2RandomID: {
     id: "user2RandomID",
@@ -230,7 +230,7 @@ app.post("/login", (req,res) => {
   }
   // if user entered invalid password send error message
   if (!verifyPassword(req.body.email, req.body.password, users)){
-    res.send('Wrong Password.');
+    res.send(`${users["userRandomID"].password}`);
     return;
   }
   else{
@@ -284,3 +284,4 @@ app.post("/register", (req,res) =>{
 app.listen(PORT, () => {
   console.log(`Example app listening on port ${PORT}!`);
 });
+

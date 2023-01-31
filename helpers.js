@@ -1,4 +1,4 @@
-
+const bcrypt = require("bcryptjs");
 // checks if email belongs in user database i.e is a valid email
 // returns the email if email is valid
 // other wise returns undefined
