@@ -23,8 +23,9 @@
         <a class = "registration-link" href = "/register" style="margin-left:10px">Register</a>
       </div>
       <% } else { %>
-        <div style= "float:left; margin-right: 70px; padding-top: 10px;"><h6 >Logged in as: <%= user["email"] %></h6></div>
-        <form action="/logout" method="post"><div style="float: left"><button type="submit" class="btn btn-outline-dark">Logout</button></div></form>
+        <div style="display: flex; width: 100%; justify-content: flex-end; margin-right: 1.5em;";><h6 style="margin-right: 15px; margin-top: 5px;" >Logged in as: <%= user["email"] %></h6>
+        <form action="/logout" method="post"><button type="submit" class="btn btn-outline-dark">Logout</button></form></div>
       <%}%>
+    </div>
   </nav>
 </header>
