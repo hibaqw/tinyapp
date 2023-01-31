@@ -41,27 +41,7 @@
       </form>
       </div>
     </div>
-    <script> 
-    const inputId = "<%= id %>";
-    const urls = "<%= urls %>";
-    const errorElem = document.getElementById('error')
-    const form = document.getElementById('form-inline');
-    let errorFound = false;
-    let message = "";
-    form.addEventListener('submit', (e) => {
-      console.log("html");
-      if (urls[inputId] === undefined){
-        message += 'Entered Short URL Does Not Exist';
-        errorFound = true;
-
-      }
-      if (errorFound){
-        errorElem.innerText(message);
-      }
-
-    })
     
-    </script>
     <!-- Bootstrap JS -->
     <script
       src="https://code.jquery.com/jquery-3.3.1.slim.min.js"

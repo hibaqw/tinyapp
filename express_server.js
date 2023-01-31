@@ -20,8 +20,14 @@ const users = {
 };
 //database of urls 
 const urlDatabase = {
-  "b2xVn2": "http://www.lighthouselabs.ca",
-  "9sm5xK": "http://www.google.com"
+  b6UTxQ: {
+    longURL: "https://www.tsn.ca",
+    userID: "aJ48lW",
+  },
+  i3BoGr: {
+    longURL: "https://www.google.ca",
+    userID: "userRandomID",
+  },
 };
 //function that generates random 6 letter alphanumeric strings
 //for user_id url database
@@ -35,9 +41,19 @@ function generateRandomString() {
   return result; 
 }
 
-// function lookUpUser(user_id){
-//   users[user_id]? users[user_id]: undefined;
-// }
+//Helper Functions
+
+function urlsForUser(id) {
+  const userURLs = {};
+  for ( const key in urlDatabase){
+    if (urlDatabase[key]["userID"] === id){
+      userURLs[key] = urlDatabase[key]["longURL"];
+    }
+    
+  }
+  return userURLs;
+
+}
 
 function getUserEmail(email){
 
@@ -93,8 +109,15 @@ app.get("/urls.json", (req, res) => {
 
 // display short and long urls on /urls page
 app.get("/urls", (req, res) => {
-  const user = users[req.cookies.user_id];
-  const templateVars = { urls: urlDatabase, user: user};
+
+  if(!req.cookies.user_id){
+    res.send("Login or Sign Up to Create and View URLs.");
+    return;
+  }
+  const id = req.cookies.user_id;
+  const user = users[id];
+  const urls = urlsForUser(id)
+  const templateVars = { urls, user: user};
   res.render("urls_index", templateVars);
 });
 
@@ -118,7 +141,7 @@ app.post("/urls", (req, res) => {
   }
   else {
     let id = generateRandomString();
-    urlDatabase[id]= req.body.longURL;
+    urlDatabase[id].longURL= req.body.longURL;
     res.redirect(`/urls/${id}`);
   }
   return;
@@ -131,18 +154,53 @@ app.post("/urls/:id/delete", (req, res) => {
     res.send("Login or Sign Up to Delete URL Link");
     return;
   }
-  delete urlDatabase[req.params.id];
-  res.redirect('/urls');
-});
-//display clickable short url on /urls/id page
-app.get("/urls/:id", (req, res) => {
+  //Check if ID is in Database
   if (!urlDatabase[req.params.id]){
     res.send('Short URL Entered Does Not Exist.')
     return;
   }
-  const user = users[req.cookies.user_id];
-  const templateVars = { id: req.params.id, longURL: urlDatabase[req.params.id], urls: urlDatabase ,user: user};
-  res.render("urls_show", templateVars);
+
+   //Check if ID Belongs To User
+   const user_id = req.cookies.user_id;
+   const browser_id = req.params.id;
+   const urlObj = urlsForUser(user_id);
+   for (const key in urlObj){
+     if (key === browser_id){
+      delete urlDatabase[req.params.id];
+      res.redirect('/urls');
+       return;
+     }
+   }
+   res.send('Request to Delete URL Denied. Only URLs Associated with User Account Can be Deleted.');
+   return;
+});
+//display clickable short url on /urls/id page
+app.get("/urls/:id", (req, res) => {
+  //Check if User is Logged In
+  if(!req.cookies.user_id){
+    res.send("Login or Sign Up to View URLs.");
+    return;
+  }
+  //Check if ID is in Database
+  if (!urlDatabase[req.params.id]){
+    res.send('Short URL Entered Does Not Exist.')
+    return;
+  }
+  //Check if ID Belongs To User
+  const user_id = req.cookies.user_id;
+  const browser_id = req.params.id;
+  const urlObj = urlsForUser(user_id);
+  for (const key in urlObj){
+    if (key === browser_id){
+      const user = users[req.cookies.user_id];
+      const templateVars = { id: req.params.id, longURL: urlDatabase[req.params.id].longURL, urls: urlDatabase ,user: user};
+      res.render("urls_show", templateVars);
+      return;
+    }
+  }
+  res.send('Entered URL Not Associated With Account. Only URLs Associated with User Account Can be Edited.');
+  return;
+  
 });
 
 //post request to edit existing longURL
@@ -152,15 +210,34 @@ app.post("/urls/:id", (req, res) => {
     res.send("Login to Update Existing Url.");
     return;
   }
+   //Check if ID is in Database
+   if (!urlDatabase[req.params.id]){
+    res.send('Short URL Entered Does Not Exist.')
+    return;
+  }
+  //Check if ID Belongs To User
+  const user_id = req.cookies.user_id;
+  const browser_id = req.params.id;
+  const urlObj = urlsForUser(user_id);
+  for (const key in urlObj){
+    if (key === browser_id){
+      const user = users[req.cookies.user_id];
+      const templateVars = { id: req.params.id, longURL: urlDatabase[req.params.id].longURL, urls: urlDatabase ,user: user};
+      res.render("urls_show", templateVars);
+      return;
+    }
+  }
+  res.send('Request to Edit URL Denied. Please Create Or Enter Existing URL.');
+  return;
 
-  urlDatabase[req.params.id]= req.body.longURL;
+  urlDatabase[req.params.id].longURL= req.body.longURL;
   res.redirect('/urls');
 });
 
 // redirect from /u/id to long url by clicking clickable short link
 app.get("/u/:id", (req, res) => {
 
-  const longURL = urlDatabase[req.params.id];
+  const longURL = urlDatabase[req.params.id].longURL;
   // is this a good way for checking if id exists in database
   // what about the message sent?
   /*if (!urlDatabase[req.params.id]){
@@ -181,7 +258,8 @@ app.get("/u/:id", (req, res) => {
 // get login info and render login page
 app.get("/login", (req,res) => {
   if(!req.cookies.user_id){
-    const templateVars = { id: req.params.id, longURL: urlDatabase[req.params.id], user: undefined};
+    console.log(req.param.id);
+    const templateVars = { id: req.params.id,user: undefined};
     res.render('urls_login',templateVars);
   }
   else{
@@ -215,7 +293,7 @@ app.post("/logout", (req,res) => {
 app.get("/register", (req,res) =>{
   //const user = users["userRandomID"];
   if (!req.cookies.user_id) {
-    const templateVars = { id: req.params.id, longURL: urlDatabase[req.params.id], user: undefined};
+    const templateVars = { id: req.params.id, user: undefined};
     res.render("urls_register", templateVars);
   }
   else {
